@@ -1,4 +1,27 @@
-package com.turkcell.lyraapp.ui.theme
+# LyraApp - Tipografi Sistemi
+
+> Bu dosya LyraApp isimli uygulamanın tipografi sistemi için
+> **tek doğruluk kaynağıdır** (single source of truth) ve
+> doğrudan bir **Android Jetpack Compose** projesinde kullanılmak
+> üzere düzenlenmiştir.
+
+---
+
+## 1. Temel Kural
+
+> Hiçbir `@Composable` içinde ham `TextStyle(fontSize = ...)` yazılmaz.
+> Tipler daima `MaterialTheme.typography.<rol>` üzerinden okunmak zorundadır.
+
+Ham `TextStyle(...)` tanımı yalnızca `Type.kt` içinde kullanılır.
+
+---
+
+## 2. `Type.kt` — Tipografi Tanımları
+
+LyraApp **Roboto** font ailesini kullanır.
+
+```kotlin
+package com.lyraapp.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -123,3 +146,22 @@ val LyraTypography = Typography(
         letterSpacing = 0.5.sp,
     ),
 )
+```
+
+---
+
+## 3. `Theme.kt` Entegrasyonu
+
+`LyraTypography`, `Theme.kt` içindeki `MaterialTheme` çağrısına aktarılmaktadır:
+
+```kotlin
+MaterialTheme(
+    colorScheme = colorScheme,
+    typography  = LyraTypography, // bu dosyada tanımlı
+    content     = content,
+)
+```
+
+> **Varsayılan:** Dynamic Type **KAPALI**. Color sistemindeki Dynamic Color politikasıyla tutarlı; marka tipografi ölçeği her cihazda sabit kalmalıdır.
+
+---
