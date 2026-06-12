@@ -32,6 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,19 +41,31 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.lyraapp.ui.theme.LyraTheme
 
 @Composable
+fun LoginRoute(viewModel: LoginViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                LoginEffect.NavigateToHome           -> { /* TODO: Navigasyon bağlandığında doldurulacak */ }
+                LoginEffect.NavigateToForgotPassword -> { /* TODO */ }
+                LoginEffect.NavigateToRegister       -> { /* TODO */ }
+            }
+        }
+    }
+
+    LoginScreen(state = state, onIntent = viewModel::onIntent)
+}
+
+@Composable
 fun LoginScreen(
-    phoneNumber: String,
-    onPhoneNumberChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onPasswordVisibilityToggle: () -> Unit,
-    onLoginClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit,
-    onRegisterClick: () -> Unit,
+    state: LoginState,
+    onIntent: (LoginIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -102,8 +116,8 @@ fun LoginScreen(
             Spacer(Modifier.height(32.dp))
 
             OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = onPhoneNumberChange,
+                value = state.phoneNumber,
+                onValueChange = { onIntent(LoginIntent.PhoneNumberChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Telefon numarası") },
                 placeholder = { Text("5XX XXX XX XX") },
@@ -137,8 +151,8 @@ fun LoginScreen(
             Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = onPasswordChange,
+                value = state.password,
+                onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Şifre") },
                 leadingIcon = {
@@ -149,19 +163,19 @@ fun LoginScreen(
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = onPasswordVisibilityToggle) {
+                    IconButton(onClick = { onIntent(LoginIntent.PasswordVisibilityToggled) }) {
                         Icon(
-                            imageVector = if (passwordVisible) {
+                            imageVector = if (state.passwordVisible) {
                                 Icons.Default.VisibilityOff
                             } else {
                                 Icons.Default.Visibility
                             },
-                            contentDescription = if (passwordVisible) "Sifreyi gizle" else "Sifreyi goster",
+                            contentDescription = if (state.passwordVisible) "Sifreyi gizle" else "Sifreyi goster",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 },
-                visualTransformation = if (passwordVisible) {
+                visualTransformation = if (state.passwordVisible) {
                     VisualTransformation.None
                 } else {
                     PasswordVisualTransformation()
@@ -169,10 +183,12 @@ fun LoginScreen(
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = state.error != null,
+                supportingText = state.error?.let { { Text(it) } },
             )
 
             TextButton(
-                onClick = onForgotPasswordClick,
+                onClick = { onIntent(LoginIntent.ForgotPasswordClicked) },
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(
@@ -185,19 +201,22 @@ fun LoginScreen(
             Spacer(Modifier.height(8.dp))
 
             FilledTonalButton(
-                onClick = onLoginClick,
+                onClick = { onIntent(LoginIntent.LoginClicked) },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isLoading,
             ) {
                 Text(
-                    text = "Giriş yap",
+                    text = if (state.isLoading) "Giriş yapılıyor..." else "Giriş yap",
                     style = MaterialTheme.typography.labelLarge,
                 )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
+                if (!state.isLoading) {
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
             }
         }
 
@@ -217,7 +236,7 @@ fun LoginScreen(
                 text = "Kayıt ol",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable(onClick = onRegisterClick),
+                modifier = Modifier.clickable { onIntent(LoginIntent.RegisterClicked) },
             )
         }
     }
@@ -228,15 +247,8 @@ fun LoginScreen(
 private fun LoginScreenLightPreview() {
     LyraTheme(darkTheme = false) {
         LoginScreen(
-            phoneNumber = "",
-            onPhoneNumberChange = {},
-            password = "",
-            onPasswordChange = {},
-            passwordVisible = false,
-            onPasswordVisibilityToggle = {},
-            onLoginClick = {},
-            onForgotPasswordClick = {},
-            onRegisterClick = {},
+            state = LoginState(),
+            onIntent = {},
         )
     }
 }
@@ -246,15 +258,8 @@ private fun LoginScreenLightPreview() {
 private fun LoginScreenDarkPreview() {
     LyraTheme(darkTheme = true) {
         LoginScreen(
-            phoneNumber = "",
-            onPhoneNumberChange = {},
-            password = "",
-            onPasswordChange = {},
-            passwordVisible = false,
-            onPasswordVisibilityToggle = {},
-            onLoginClick = {},
-            onForgotPasswordClick = {},
-            onRegisterClick = {},
+            state = LoginState(),
+            onIntent = {},
         )
     }
 }
