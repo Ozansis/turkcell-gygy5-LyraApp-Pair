@@ -37,15 +37,13 @@ app/src/main/java/com/turkcell/lyraapp/
 └── ui/
     └── screens/
         └── <feature>/
-            ├── <Feature>State.kt
-            ├── <Feature>Intent.kt
-            ├── <Feature>Effect.kt
+            ├── <Feature>Contract.kt     ← State + Intent + Effect (nested object)
             ├── <Feature>ViewModel.kt
             └── <Feature>Screen.kt       ← Route + Screen birlikte
 ```
 
 Kurallar:
-- State, Intent, Effect **ayrı dosyalarda** bulunur; tek bir `Contract.kt` dosyasına birleştirilmez.
+- State, Intent ve Effect `<Feature>Contract.kt` içinde `object <Feature>Contract { ... }` altında birleştirilir.
 - `<Feature>Screen.kt` hem `<Feature>Route` hem de `<Feature>Screen` composable'larını içerir.
 - Repository interface ve Fake implementasyonu **aynı pakette** bulunur.
 
@@ -74,7 +72,7 @@ fun LoginRoute(viewModel: LoginViewModel = hiltViewModel()) { ... }
 
 // Stateless — test ve preview edilebilir
 @Composable
-fun LoginScreen(state: LoginState, onIntent: (LoginIntent) -> Unit, modifier: Modifier = Modifier) { ... }
+fun LoginScreen(state: LoginContract.State, onIntent: (LoginContract.Intent) -> Unit, modifier: Modifier = Modifier) { ... }
 ```
 
 ---

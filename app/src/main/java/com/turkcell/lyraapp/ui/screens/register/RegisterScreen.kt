@@ -61,9 +61,9 @@ fun RegisterRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                RegisterEffect.NavigateToHome  -> onNavigateToHome()
-                RegisterEffect.NavigateToLogin -> onNavigateToLogin()
-                RegisterEffect.NavigateUp      -> onNavigateUp()
+                RegisterContract.Effect.NavigateToHome  -> onNavigateToHome()
+                RegisterContract.Effect.NavigateToLogin -> onNavigateToLogin()
+                RegisterContract.Effect.NavigateUp      -> onNavigateUp()
             }
         }
     }
@@ -73,8 +73,8 @@ fun RegisterRoute(
 
 @Composable
 fun RegisterScreen(
-    state: RegisterState,
-    onIntent: (RegisterIntent) -> Unit,
+    state: RegisterContract.State,
+    onIntent: (RegisterContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -92,7 +92,7 @@ fun RegisterScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            IconButton(onClick = { onIntent(RegisterIntent.BackClicked) }) {
+            IconButton(onClick = { onIntent(RegisterContract.Intent.BackClicked) }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Geri",
@@ -124,7 +124,7 @@ fun RegisterScreen(
             ) {
                 OutlinedTextField(
                     value = state.firstName,
-                    onValueChange = { onIntent(RegisterIntent.FirstNameChanged(it)) },
+                    onValueChange = { onIntent(RegisterContract.Intent.FirstNameChanged(it)) },
                     modifier = Modifier.weight(1f),
                     label = { Text("Ad") },
                     singleLine = true,
@@ -133,7 +133,7 @@ fun RegisterScreen(
                 )
                 OutlinedTextField(
                     value = state.lastName,
-                    onValueChange = { onIntent(RegisterIntent.LastNameChanged(it)) },
+                    onValueChange = { onIntent(RegisterContract.Intent.LastNameChanged(it)) },
                     modifier = Modifier.weight(1f),
                     label = { Text("Soyad") },
                     singleLine = true,
@@ -146,7 +146,7 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = state.phoneNumber,
-                onValueChange = { onIntent(RegisterIntent.PhoneNumberChanged(it)) },
+                onValueChange = { onIntent(RegisterContract.Intent.PhoneNumberChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Telefon numarası") },
                 placeholder = { Text("5XX XXX XX XX") },
@@ -179,7 +179,7 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = state.password,
-                onValueChange = { onIntent(RegisterIntent.PasswordChanged(it)) },
+                onValueChange = { onIntent(RegisterContract.Intent.PasswordChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Şifre") },
                 leadingIcon = {
@@ -190,7 +190,7 @@ fun RegisterScreen(
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { onIntent(RegisterIntent.PasswordVisibilityToggled) }) {
+                    IconButton(onClick = { onIntent(RegisterContract.Intent.PasswordVisibilityToggled) }) {
                         Icon(
                             imageVector = if (state.passwordVisible) {
                                 Icons.Default.VisibilityOff
@@ -232,7 +232,7 @@ fun RegisterScreen(
             ) {
                 Checkbox(
                     checked = state.termsAccepted,
-                    onCheckedChange = { onIntent(RegisterIntent.TermsAcceptanceToggled) },
+                    onCheckedChange = { onIntent(RegisterContract.Intent.TermsAcceptanceToggled) },
                 )
                 Spacer(Modifier.width(4.dp))
                 Text(
@@ -257,7 +257,7 @@ fun RegisterScreen(
             Spacer(Modifier.height(16.dp))
 
             FilledTonalButton(
-                onClick = { onIntent(RegisterIntent.RegisterClicked) },
+                onClick = { onIntent(RegisterContract.Intent.RegisterClicked) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.termsAccepted && !state.isLoading,
             ) {
@@ -294,7 +294,7 @@ fun RegisterScreen(
                 text = "Giriş yap",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onIntent(RegisterIntent.NavigateToLoginClicked) },
+                modifier = Modifier.clickable { onIntent(RegisterContract.Intent.NavigateToLoginClicked) },
             )
         }
     }
@@ -305,7 +305,7 @@ fun RegisterScreen(
 private fun RegisterScreenLightPreview() {
     LyraTheme(darkTheme = false) {
         RegisterScreen(
-            state = RegisterState(),
+            state = RegisterContract.State(),
             onIntent = {},
         )
     }
@@ -316,7 +316,7 @@ private fun RegisterScreenLightPreview() {
 private fun RegisterScreenDarkPreview() {
     LyraTheme(darkTheme = true) {
         RegisterScreen(
-            state = RegisterState(),
+            state = RegisterContract.State(),
             onIntent = {},
         )
     }

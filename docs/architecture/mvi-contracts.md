@@ -113,9 +113,17 @@ sealed interface LoginEffect {
 
 ```
 ui/screens/<feature>/
-    <Feature>State.kt    ← sadece State data class
-    <Feature>Intent.kt   ← sadece Intent sealed interface
-    <Feature>Effect.kt   ← sadece Effect sealed interface
+    <Feature>Contract.kt   ← State, Intent ve Effect tek dosyada, nested object içinde
 ```
 
-Üç sözleşme tek bir `<Feature>Contract.kt` dosyasına **birleştirilmez**.
+Üç sözleşme `object <Feature>Contract { ... }` yapısı içinde birleştirilir. Kullanım örnekleri:
+
+```kotlin
+object LoginContract {
+    data class State(...) { ... }
+    sealed interface Intent { ... }
+    sealed interface Effect { ... }
+}
+```
+
+ViewModel ve Screen'de referanslar `LoginContract.State`, `LoginContract.Intent`, `LoginContract.Effect` biçiminde yazılır.

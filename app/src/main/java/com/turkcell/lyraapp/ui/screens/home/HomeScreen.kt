@@ -50,12 +50,12 @@ fun HomeRoute(viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onIntent(HomeIntent.LoadData)
+        viewModel.onIntent(HomeContract.Intent.LoadData)
         viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeEffect.NavigateToPlayer   -> { /* ileride eklenecek */ }
-                is HomeEffect.NavigateToPlaylist -> { /* ileride eklenecek */ }
-                is HomeEffect.NavigateToCategory -> { /* ileride eklenecek */ }
+                is HomeContract.Effect.NavigateToPlayer   -> { /* ileride eklenecek */ }
+                is HomeContract.Effect.NavigateToPlaylist -> { /* ileride eklenecek */ }
+                is HomeContract.Effect.NavigateToCategory -> { /* ileride eklenecek */ }
             }
         }
     }
@@ -65,8 +65,8 @@ fun HomeRoute(viewModel: HomeViewModel = hiltViewModel()) {
 
 @Composable
 fun HomeScreen(
-    state: HomeState,
-    onIntent: (HomeIntent) -> Unit,
+    state: HomeContract.State,
+    onIntent: (HomeContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -206,7 +206,7 @@ private fun UserAvatar(
 @Composable
 private fun MoodCategoriesSection(
     categories: List<MoodCategory>,
-    onIntent: (HomeIntent) -> Unit,
+    onIntent: (HomeContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val rows = categories.chunked(2)
@@ -219,7 +219,7 @@ private fun MoodCategoriesSection(
                 row.forEach { category ->
                     MoodCategoryCard(
                         category = category,
-                        onClick = { onIntent(HomeIntent.MoodCategoryClicked(category)) },
+                        onClick = { onIntent(HomeContract.Intent.MoodCategoryClicked(category)) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -289,7 +289,7 @@ private fun MoodCategoryCard(
 @Composable
 private fun RecentlyPlayedSection(
     tracks: List<Track>,
-    onIntent: (HomeIntent) -> Unit,
+    onIntent: (HomeContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -308,7 +308,7 @@ private fun RecentlyPlayedSection(
                 text = "Tümü",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onIntent(HomeIntent.SeeAllRecentlyPlayedClicked) },
+                modifier = Modifier.clickable { onIntent(HomeContract.Intent.SeeAllRecentlyPlayedClicked) },
             )
         }
         Spacer(modifier = Modifier.height(14.dp))
@@ -319,7 +319,7 @@ private fun RecentlyPlayedSection(
             items(items = tracks, key = { it.id }) { track ->
                 TrackCard(
                     track = track,
-                    onClick = { onIntent(HomeIntent.TrackClicked(track)) },
+                    onClick = { onIntent(HomeContract.Intent.TrackClicked(track)) },
                 )
             }
         }
@@ -390,7 +390,7 @@ private fun TrackCard(
 @Composable
 private fun RecommendedPlaylistsSection(
     playlists: List<Playlist>,
-    onIntent: (HomeIntent) -> Unit,
+    onIntent: (HomeContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -409,7 +409,7 @@ private fun RecommendedPlaylistsSection(
             items(items = playlists, key = { it.id }) { playlist ->
                 PlaylistCard(
                     playlist = playlist,
-                    onClick = { onIntent(HomeIntent.PlaylistClicked(playlist)) },
+                    onClick = { onIntent(HomeContract.Intent.PlaylistClicked(playlist)) },
                 )
             }
         }

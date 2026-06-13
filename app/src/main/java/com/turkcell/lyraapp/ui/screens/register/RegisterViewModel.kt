@@ -18,23 +18,23 @@ class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(RegisterState())
-    val state: StateFlow<RegisterState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(RegisterContract.State())
+    val state: StateFlow<RegisterContract.State> = _state.asStateFlow()
 
-    private val _effect = Channel<RegisterEffect>(Channel.BUFFERED)
+    private val _effect = Channel<RegisterContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    fun onIntent(intent: RegisterIntent) {
+    fun onIntent(intent: RegisterContract.Intent) {
         when (intent) {
-            is RegisterIntent.FirstNameChanged       -> _state.update { it.copy(firstName = intent.value) }
-            is RegisterIntent.LastNameChanged        -> _state.update { it.copy(lastName = intent.value) }
-            is RegisterIntent.PhoneNumberChanged     -> _state.update { it.copy(phoneNumber = intent.value) }
-            is RegisterIntent.PasswordChanged        -> _state.update { it.copy(password = intent.value) }
-            RegisterIntent.PasswordVisibilityToggled -> _state.update { it.copy(passwordVisible = !it.passwordVisible) }
-            RegisterIntent.TermsAcceptanceToggled    -> _state.update { it.copy(termsAccepted = !it.termsAccepted) }
-            RegisterIntent.RegisterClicked           -> handleRegister()
-            RegisterIntent.NavigateToLoginClicked    -> sendEffect(RegisterEffect.NavigateToLogin)
-            RegisterIntent.BackClicked               -> sendEffect(RegisterEffect.NavigateUp)
+            is RegisterContract.Intent.FirstNameChanged       -> _state.update { it.copy(firstName = intent.value) }
+            is RegisterContract.Intent.LastNameChanged        -> _state.update { it.copy(lastName = intent.value) }
+            is RegisterContract.Intent.PhoneNumberChanged     -> _state.update { it.copy(phoneNumber = intent.value) }
+            is RegisterContract.Intent.PasswordChanged        -> _state.update { it.copy(password = intent.value) }
+            RegisterContract.Intent.PasswordVisibilityToggled -> _state.update { it.copy(passwordVisible = !it.passwordVisible) }
+            RegisterContract.Intent.TermsAcceptanceToggled    -> _state.update { it.copy(termsAccepted = !it.termsAccepted) }
+            RegisterContract.Intent.RegisterClicked           -> handleRegister()
+            RegisterContract.Intent.NavigateToLoginClicked    -> sendEffect(RegisterContract.Effect.NavigateToLogin)
+            RegisterContract.Intent.BackClicked               -> sendEffect(RegisterContract.Effect.NavigateUp)
         }
     }
 
@@ -56,7 +56,7 @@ class RegisterViewModel @Inject constructor(
                 phoneNumber = current.phoneNumber,
                 password = current.password,
             )
-                .onSuccess { sendEffect(RegisterEffect.NavigateToHome) }
+                .onSuccess { sendEffect(RegisterContract.Effect.NavigateToHome) }
                 .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }
             _state.update { it.copy(isLoading = false) }
         }
@@ -68,7 +68,7 @@ class RegisterViewModel @Inject constructor(
         return null
     }
 
-    private fun sendEffect(effect: RegisterEffect) {
+    private fun sendEffect(effect: RegisterContract.Effect) {
         viewModelScope.launch { _effect.send(effect) }
     }
 }

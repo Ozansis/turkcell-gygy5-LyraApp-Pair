@@ -57,9 +57,9 @@ fun LoginRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                LoginEffect.NavigateToHome           -> onNavigateToHome()
-                LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
-                LoginEffect.NavigateToRegister       -> onNavigateToRegister()
+                LoginContract.Effect.NavigateToHome           -> onNavigateToHome()
+                LoginContract.Effect.NavigateToForgotPassword -> onNavigateToForgotPassword()
+                LoginContract.Effect.NavigateToRegister       -> onNavigateToRegister()
             }
         }
     }
@@ -69,8 +69,8 @@ fun LoginRoute(
 
 @Composable
 fun LoginScreen(
-    state: LoginState,
-    onIntent: (LoginIntent) -> Unit,
+    state: LoginContract.State,
+    onIntent: (LoginContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -122,7 +122,7 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = state.phoneNumber,
-                onValueChange = { onIntent(LoginIntent.PhoneNumberChanged(it)) },
+                onValueChange = { onIntent(LoginContract.Intent.PhoneNumberChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Telefon numarası") },
                 placeholder = { Text("5XX XXX XX XX") },
@@ -157,7 +157,7 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = state.password,
-                onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
+                onValueChange = { onIntent(LoginContract.Intent.PasswordChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Şifre") },
                 leadingIcon = {
@@ -168,7 +168,7 @@ fun LoginScreen(
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { onIntent(LoginIntent.PasswordVisibilityToggled) }) {
+                    IconButton(onClick = { onIntent(LoginContract.Intent.PasswordVisibilityToggled) }) {
                         Icon(
                             imageVector = if (state.passwordVisible) {
                                 Icons.Default.VisibilityOff
@@ -193,7 +193,7 @@ fun LoginScreen(
             )
 
             TextButton(
-                onClick = { onIntent(LoginIntent.ForgotPasswordClicked) },
+                onClick = { onIntent(LoginContract.Intent.ForgotPasswordClicked) },
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(
@@ -206,7 +206,7 @@ fun LoginScreen(
             Spacer(Modifier.height(8.dp))
 
             FilledTonalButton(
-                onClick = { onIntent(LoginIntent.LoginClicked) },
+                onClick = { onIntent(LoginContract.Intent.LoginClicked) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !state.isLoading,
             ) {
@@ -241,7 +241,7 @@ fun LoginScreen(
                 text = "Kayıt ol",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onIntent(LoginIntent.RegisterClicked) },
+                modifier = Modifier.clickable { onIntent(LoginContract.Intent.RegisterClicked) },
             )
         }
     }
@@ -252,7 +252,7 @@ fun LoginScreen(
 private fun LoginScreenLightPreview() {
     LyraTheme(darkTheme = false) {
         LoginScreen(
-            state = LoginState(),
+            state = LoginContract.State(),
             onIntent = {},
         )
     }
@@ -263,7 +263,7 @@ private fun LoginScreenLightPreview() {
 private fun LoginScreenDarkPreview() {
     LyraTheme(darkTheme = true) {
         LoginScreen(
-            state = LoginState(),
+            state = LoginContract.State(),
             onIntent = {},
         )
     }

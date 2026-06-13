@@ -18,20 +18,20 @@ class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(LoginState())
-    val state: StateFlow<LoginState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(LoginContract.State())
+    val state: StateFlow<LoginContract.State> = _state.asStateFlow()
 
-    private val _effect = Channel<LoginEffect>(Channel.BUFFERED)
+    private val _effect = Channel<LoginContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    fun onIntent(intent: LoginIntent) {
+    fun onIntent(intent: LoginContract.Intent) {
         when (intent) {
-            is LoginIntent.PhoneNumberChanged     -> _state.update { it.copy(phoneNumber = intent.value) }
-            is LoginIntent.PasswordChanged        -> _state.update { it.copy(password = intent.value) }
-            LoginIntent.PasswordVisibilityToggled -> _state.update { it.copy(passwordVisible = !it.passwordVisible) }
-            LoginIntent.LoginClicked              -> handleLogin()
-            LoginIntent.ForgotPasswordClicked     -> sendEffect(LoginEffect.NavigateToForgotPassword)
-            LoginIntent.RegisterClicked           -> sendEffect(LoginEffect.NavigateToRegister)
+            is LoginContract.Intent.PhoneNumberChanged     -> _state.update { it.copy(phoneNumber = intent.value) }
+            is LoginContract.Intent.PasswordChanged        -> _state.update { it.copy(password = intent.value) }
+            LoginContract.Intent.PasswordVisibilityToggled -> _state.update { it.copy(passwordVisible = !it.passwordVisible) }
+            LoginContract.Intent.LoginClicked              -> handleLogin()
+            LoginContract.Intent.ForgotPasswordClicked     -> sendEffect(LoginContract.Effect.NavigateToForgotPassword)
+            LoginContract.Intent.RegisterClicked           -> sendEffect(LoginContract.Effect.NavigateToRegister)
         }
     }
 
@@ -39,13 +39,13 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             authRepository.login(_state.value.phoneNumber, _state.value.password)
-                .onSuccess { sendEffect(LoginEffect.NavigateToHome) }
+                .onSuccess { sendEffect(LoginContract.Effect.NavigateToHome) }
                 .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }
             _state.update { it.copy(isLoading = false) }
         }
     }
 
-    private fun sendEffect(effect: LoginEffect) {
+    private fun sendEffect(effect: LoginContract.Effect) {
         viewModelScope.launch { _effect.send(effect) }
     }
 }

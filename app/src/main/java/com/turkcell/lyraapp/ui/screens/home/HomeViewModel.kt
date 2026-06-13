@@ -18,19 +18,19 @@ class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(HomeState())
-    val state: StateFlow<HomeState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(HomeContract.State())
+    val state: StateFlow<HomeContract.State> = _state.asStateFlow()
 
-    private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
+    private val _effect = Channel<HomeContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    fun onIntent(intent: HomeIntent) {
+    fun onIntent(intent: HomeContract.Intent) {
         when (intent) {
-            HomeIntent.LoadData                      -> loadData()
-            HomeIntent.SeeAllRecentlyPlayedClicked   -> { /* ileride navigasyon eklenecek */ }
-            is HomeIntent.MoodCategoryClicked        -> sendEffect(HomeEffect.NavigateToCategory(intent.category.id))
-            is HomeIntent.TrackClicked               -> sendEffect(HomeEffect.NavigateToPlayer(intent.track.id))
-            is HomeIntent.PlaylistClicked            -> sendEffect(HomeEffect.NavigateToPlaylist(intent.playlist.id))
+            HomeContract.Intent.LoadData                      -> loadData()
+            HomeContract.Intent.SeeAllRecentlyPlayedClicked   -> { /* ileride navigasyon eklenecek */ }
+            is HomeContract.Intent.MoodCategoryClicked        -> sendEffect(HomeContract.Effect.NavigateToCategory(intent.category.id))
+            is HomeContract.Intent.TrackClicked               -> sendEffect(HomeContract.Effect.NavigateToPlayer(intent.track.id))
+            is HomeContract.Intent.PlaylistClicked            -> sendEffect(HomeContract.Effect.NavigateToPlaylist(intent.playlist.id))
         }
     }
 
@@ -61,7 +61,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun sendEffect(effect: HomeEffect) {
+    private fun sendEffect(effect: HomeContract.Effect) {
         viewModelScope.launch { _effect.send(effect) }
     }
 }
