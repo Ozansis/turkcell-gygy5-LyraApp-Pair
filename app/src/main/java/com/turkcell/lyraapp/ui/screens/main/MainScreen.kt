@@ -18,6 +18,7 @@ import com.turkcell.lyraapp.ui.screens.home.HomeRoute
 import com.turkcell.lyraapp.ui.screens.library.LibraryRoute
 import com.turkcell.lyraapp.ui.screens.playlistdetail.PlaylistDetailRoute
 import com.turkcell.lyraapp.ui.screens.profile.ProfileRoute
+import com.turkcell.lyraapp.ui.screens.notification.NotificationRoute
 import com.turkcell.lyraapp.ui.screens.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.screens.search.SearchRoute
 
@@ -77,6 +78,9 @@ fun MainRoute() {
                     onNavigateBack = { navController.navigateUp() },
                     onNavigateToNotification = { navController.navigate(NOTIFICATION_ROUTE) },
                 )
+            }
+            composable(NOTIFICATION_ROUTE) {
+                NotificationRoute()
             }
         }
     }
