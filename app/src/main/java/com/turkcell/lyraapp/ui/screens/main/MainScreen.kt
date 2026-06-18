@@ -18,10 +18,13 @@ import com.turkcell.lyraapp.ui.screens.home.HomeRoute
 import com.turkcell.lyraapp.ui.screens.library.LibraryRoute
 import com.turkcell.lyraapp.ui.screens.playlistdetail.PlaylistDetailRoute
 import com.turkcell.lyraapp.ui.screens.profile.ProfileRoute
+import com.turkcell.lyraapp.ui.screens.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.screens.search.SearchRoute
 
 private const val PLAYLIST_DETAIL_ROUTE = "playlist_detail"
 private const val CREATE_PLAYLIST_ROUTE = "create_playlist"
+private const val NOW_PLAYING_ROUTE     = "now_playing"
+private const val NOTIFICATION_ROUTE    = "notification"
 
 @Composable
 fun MainRoute() {
@@ -47,7 +50,9 @@ fun MainRoute() {
             startDestination = BottomNavDestination.HOME.route,
             modifier = Modifier.padding(paddingValues),
         ) {
-            composable(BottomNavDestination.HOME.route) { HomeRoute() }
+            composable(BottomNavDestination.HOME.route) {
+                HomeRoute(onNavigateToPlayer = { navController.navigate(NOW_PLAYING_ROUTE) })
+            }
             composable(BottomNavDestination.SEARCH.route) { SearchRoute() }
             composable(BottomNavDestination.LIBRARY.route) {
                 LibraryRoute(
@@ -65,6 +70,12 @@ fun MainRoute() {
             composable(CREATE_PLAYLIST_ROUTE) {
                 CreatePlaylistRoute(
                     onNavigateBack = { navController.navigateUp() },
+                )
+            }
+            composable(NOW_PLAYING_ROUTE) {
+                NowPlayingRoute(
+                    onNavigateBack = { navController.navigateUp() },
+                    onNavigateToNotification = { navController.navigate(NOTIFICATION_ROUTE) },
                 )
             }
         }

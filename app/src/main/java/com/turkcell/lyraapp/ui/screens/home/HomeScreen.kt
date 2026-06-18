@@ -46,14 +46,17 @@ import com.turkcell.lyraapp.data.home.Playlist
 import com.turkcell.lyraapp.data.home.Track
 
 @Composable
-fun HomeRoute(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeRoute(
+    onNavigateToPlayer: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.onIntent(HomeContract.Intent.LoadData)
         viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeContract.Effect.NavigateToPlayer   -> { /* ileride eklenecek */ }
+                is HomeContract.Effect.NavigateToPlayer   -> onNavigateToPlayer()
                 is HomeContract.Effect.NavigateToPlaylist -> { /* ileride eklenecek */ }
                 is HomeContract.Effect.NavigateToCategory -> { /* ileride eklenecek */ }
             }
