@@ -3,6 +3,7 @@ package com.turkcell.lyraapp.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.lyraapp.data.home.HomeRepository
+import com.turkcell.lyraapp.data.player.PlayerStateHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
+    private val playerStateHolder: PlayerStateHolder,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeContract.State())
@@ -29,7 +31,10 @@ class HomeViewModel @Inject constructor(
             HomeContract.Intent.LoadData                      -> loadData()
             HomeContract.Intent.SeeAllRecentlyPlayedClicked   -> { /* ileride navigasyon eklenecek */ }
             is HomeContract.Intent.MoodCategoryClicked        -> sendEffect(HomeContract.Effect.NavigateToCategory(intent.category.id))
-            is HomeContract.Intent.TrackClicked               -> sendEffect(HomeContract.Effect.NavigateToPlayer(intent.track.id))
+            is HomeContract.Intent.TrackClicked               -> {
+                playerStateHolder.currentTrack = intent.track
+                sendEffect(HomeContract.Effect.NavigateToPlayer(intent.track.id))
+            }
             is HomeContract.Intent.PlaylistClicked            -> sendEffect(HomeContract.Effect.NavigateToPlaylist(intent.playlist.id))
         }
     }
