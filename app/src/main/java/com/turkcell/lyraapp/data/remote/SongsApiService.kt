@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.data.remote
 
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 data class SongDto(
@@ -19,6 +20,16 @@ data class SongsResponse(
     val nextCursor: String?,
 )
 
+data class StreamUrlDto(
+    val url: String,
+    val expiresAt: String,
+    val mimeType: String,
+)
+
+data class StreamUrlResponse(
+    val data: StreamUrlDto,
+)
+
 interface SongsApiService {
     @GET("api/v1/songs")
     suspend fun getSongs(
@@ -26,4 +37,7 @@ interface SongsApiService {
         @Query("cursor") cursor: String? = null,
         @Query("q") query: String? = null,
     ): SongsResponse
+
+    @GET("api/v1/songs/{id}/stream-url")
+    suspend fun getStreamUrl(@Path("id") id: String): StreamUrlResponse
 }
