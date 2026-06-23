@@ -58,6 +58,8 @@ class FakeHomeRepository @Inject constructor() : HomeRepository {
         )
     )
 
+    override suspend fun getSongs(): Result<List<Track>> = Result.success(emptyList())
+
     override suspend fun getRecentlyPlayed(): Result<List<Track>> = Result.success(
         listOf(
             Track(

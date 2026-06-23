@@ -8,6 +8,7 @@ object HomeContract {
     data class State(
         val greeting: String = "",
         val userInitials: String = "",
+        val songs: List<Track> = emptyList(),
         val moodCategories: List<MoodCategory> = emptyList(),
         val recentlyPlayed: List<Track> = emptyList(),
         val recommendedPlaylists: List<Playlist> = emptyList(),
