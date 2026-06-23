@@ -4,6 +4,7 @@ interface HomeRepository {
     fun getGreeting(): String
     fun getUserInitials(): String
     suspend fun getMoodCategories(): Result<List<MoodCategory>>
+    suspend fun getSongs(): Result<List<Track>>
     suspend fun getRecentlyPlayed(): Result<List<Track>>
     suspend fun getRecommendedPlaylists(): Result<List<Playlist>>
 }

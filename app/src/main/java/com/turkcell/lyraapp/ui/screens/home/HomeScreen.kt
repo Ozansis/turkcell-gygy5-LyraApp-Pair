@@ -112,6 +112,16 @@ fun HomeScreen(
             }
 
             else -> {
+                if (state.songs.isNotEmpty()) {
+                    item {
+                        SongsSection(
+                            tracks = state.songs,
+                            onIntent = onIntent,
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+                }
+
                 if (state.moodCategories.isNotEmpty()) {
                     item {
                         MoodCategoriesSection(
@@ -203,6 +213,35 @@ private fun UserAvatar(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimary,
         )
+    }
+}
+
+@Composable
+private fun SongsSection(
+    tracks: List<Track>,
+    onIntent: (HomeContract.Intent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Şarkılar",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(items = tracks, key = { it.id }) { track ->
+                TrackCard(
+                    track = track,
+                    onClick = { onIntent(HomeContract.Intent.TrackClicked(track)) },
+                )
+            }
+        }
     }
 }
 
