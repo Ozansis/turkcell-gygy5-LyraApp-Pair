@@ -1,11 +1,16 @@
 package com.turkcell.lyraapp.ui.screens.nowplaying
 
+import android.content.ComponentName
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.Player
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.lyraapp.data.nowplaying.NowPlayingTrack
+import com.turkcell.lyraapp.data.player.LyraMusicService
 import com.turkcell.lyraapp.data.player.PlayerStateHolder
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,12 +27,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NowPlayingViewModel @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     private val playerStateHolder: PlayerStateHolder,
     private val songsApiService: SongsApiService,
 ) : ViewModel() {
-
-    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
 
     private val _state = MutableStateFlow(NowPlayingContract.State())
     val state: StateFlow<NowPlayingContract.State> = _state.asStateFlow()
@@ -35,8 +38,23 @@ class NowPlayingViewModel @Inject constructor(
     private val _effect = Channel<NowPlayingContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
+    // Player arayzü media3-exoplayer'dan gelir; MediaController IS-A Player
+    private var player: Player? = null
+
     init {
-        onIntent(NowPlayingContract.Intent.LoadData)
+        connectToService()
+    }
+
+    private fun connectToService() {
+        val sessionToken = SessionToken(
+            context,
+            ComponentName(context, LyraMusicService::class.java)
+        )
+        val future = MediaController.Builder(context, sessionToken).buildAsync()
+        future.addListener({
+            player = future.get()
+            loadData()
+        }, ContextCompat.getMainExecutor(context))
     }
 
     fun onIntent(intent: NowPlayingContract.Intent) {
@@ -56,6 +74,7 @@ class NowPlayingViewModel @Inject constructor(
 
     private fun loadData() {
         val track = playerStateHolder.currentTrack ?: return
+        val p = player ?: return
 
         _state.update {
             it.copy(
@@ -82,9 +101,9 @@ class NowPlayingViewModel @Inject constructor(
             runCatching { songsApiService.getStreamUrl(track.id) }
                 .onSuccess { response ->
                     val mediaItem = MediaItem.fromUri(response.data.url)
-                    exoPlayer.setMediaItem(mediaItem)
-                    exoPlayer.prepare()
-                    exoPlayer.play()
+                    p.setMediaItem(mediaItem)
+                    p.prepare()
+                    p.play()
                     _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
                     startPositionPolling()
                 }
@@ -98,9 +117,10 @@ class NowPlayingViewModel @Inject constructor(
         viewModelScope.launch {
             while (true) {
                 delay(500)
-                val rawDuration = exoPlayer.duration
+                val p = player ?: break
+                val rawDuration = p.duration
                 val duration = if (rawDuration > 0) rawDuration else 0L
-                val position = exoPlayer.currentPosition.coerceAtLeast(0L)
+                val position = p.currentPosition.coerceAtLeast(0L)
                 val progress = if (duration > 0) position.toFloat() / duration.toFloat() else 0f
                 _state.update { state ->
                     state.copy(
@@ -108,7 +128,7 @@ class NowPlayingViewModel @Inject constructor(
                             currentPosition = formatMs(position),
                             duration        = formatMs(duration),
                             progress        = progress,
-                            isPlaying       = exoPlayer.isPlaying,
+                            isPlaying       = p.isPlaying,
                         )
                     )
                 }
@@ -117,25 +137,27 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private fun togglePlayPause() {
-        if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play()
-        _state.update { it.copy(track = it.track?.copy(isPlaying = exoPlayer.isPlaying)) }
+        val p = player ?: return
+        val wasPlaying = p.isPlaying
+        if (wasPlaying) p.pause() else p.play()
+        _state.update { it.copy(track = it.track?.copy(isPlaying = !wasPlaying)) }
     }
 
     private fun seekForward() {
-        val newPos = (exoPlayer.currentPosition + 10_000L).coerceAtMost(
-            exoPlayer.duration.coerceAtLeast(0L)
-        )
-        exoPlayer.seekTo(newPos)
+        val p = player ?: return
+        val newPos = (p.currentPosition + 10_000L).coerceAtMost(p.duration.coerceAtLeast(0L))
+        p.seekTo(newPos)
     }
 
     private fun restart() {
-        exoPlayer.seekTo(0)
+        player?.seekTo(0)
         _state.update { it.copy(track = it.track?.copy(progress = 0f, currentPosition = "0:00")) }
     }
 
     private fun seekTo(progress: Float) {
-        val duration = exoPlayer.duration.takeIf { it > 0 } ?: return
-        exoPlayer.seekTo((duration * progress).toLong())
+        val p = player ?: return
+        val duration = p.duration.takeIf { it > 0 } ?: return
+        p.seekTo((duration * progress).toLong())
         _state.update { it.copy(track = it.track?.copy(progress = progress)) }
     }
 
@@ -164,7 +186,7 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        exoPlayer.release()
+        player = null
         super.onCleared()
     }
 }
