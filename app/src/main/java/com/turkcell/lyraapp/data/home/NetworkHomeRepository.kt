@@ -59,15 +59,20 @@ class NetworkHomeRepository @Inject constructor(
             )
         }
     }
+    override suspend fun getRecommendations(): Result<List<Track>> = runCatching {
+        meApiService.getRecommendations().data.map { dto ->
+            val (start, end) = COLOR_PALETTE[abs(dto.id.hashCode()) % COLOR_PALETTE.size]
+            Track(
+                id              = dto.id,
+                title           = dto.title,
+                artist          = dto.artist,
+                coverStartColor = start,
+                coverEndColor   = end,
+            )
+        }
+    }
 
-    override suspend fun getRecommendedPlaylists(): Result<List<Playlist>> = Result.success(
-        listOf(
-            Playlist(id = "playlist-1", title = "Gece Sakinliği",   coverStartColor = 0xFF7B61C8, coverEndColor = 0xFF5A47A3),
-            Playlist(id = "playlist-2", title = "Enerjik Başlangıç", coverStartColor = 0xFF9C6E8A, coverEndColor = 0xFF7A4F6A),
-            Playlist(id = "playlist-3", title = "Odak Modu",         coverStartColor = 0xFF2D8A8A, coverEndColor = 0xFF1D6A6A),
-            Playlist(id = "playlist-4", title = "Yaz Vibes",         coverStartColor = 0xFF4EA356, coverEndColor = 0xFF358540),
-        )
-    )
+
 
     companion object {
         private val COLOR_PALETTE = listOf(

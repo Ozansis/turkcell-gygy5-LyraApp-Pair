@@ -11,7 +11,7 @@ object HomeContract {
         val songs: List<Track> = emptyList(),
         val moodCategories: List<MoodCategory> = emptyList(),
         val recentlyPlayed: List<Track> = emptyList(),
-        val recommendedPlaylists: List<Playlist> = emptyList(),
+        val recommendations: List<Track> = emptyList(),
         val isLoading: Boolean = false,
         val error: String? = null,
     )

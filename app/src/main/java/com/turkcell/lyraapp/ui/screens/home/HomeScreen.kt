@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.lyraapp.data.home.MoodCategory
-import com.turkcell.lyraapp.data.home.Playlist
 import com.turkcell.lyraapp.data.home.Track
 
 @Composable
@@ -143,10 +142,10 @@ fun HomeScreen(
                     }
                 }
 
-                if (state.recommendedPlaylists.isNotEmpty()) {
+                if (state.recommendations.isNotEmpty()) {
                     item {
-                        RecommendedPlaylistsSection(
-                            playlists = state.recommendedPlaylists,
+                        RecommendationsSection(
+                            tracks = state.recommendations,
                             onIntent = onIntent,
                         )
                     }
@@ -430,8 +429,8 @@ private fun TrackCard(
 }
 
 @Composable
-private fun RecommendedPlaylistsSection(
-    playlists: List<Playlist>,
+private fun RecommendationsSection(
+    tracks: List<Track>,
     onIntent: (HomeContract.Intent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -448,66 +447,12 @@ private fun RecommendedPlaylistsSection(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(items = playlists, key = { it.id }) { playlist ->
-                PlaylistCard(
-                    playlist = playlist,
-                    onClick = { onIntent(HomeContract.Intent.PlaylistClicked(playlist)) },
+            items(items = tracks, key = { it.id }) { track ->
+                TrackCard(
+                    track = track,
+                    onClick = { onIntent(HomeContract.Intent.TrackClicked(track)) },
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun PlaylistCard(
-    playlist: Playlist,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .width(130.dp)
-            .clickable { onClick() },
-    ) {
-        Box(
-            modifier = Modifier
-                .size(130.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(playlist.coverStartColor),
-                            Color(playlist.coverEndColor),
-                        ),
-                    )
-                ),
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val cx = size.width * 0.5f
-                val cy = size.height * 0.5f
-                val stroke = Stroke(width = 1.5.dp.toPx())
-                drawCircle(
-                    color = Color.White.copy(alpha = 0.15f),
-                    radius = size.width * 0.6f,
-                    center = Offset(cx, cy),
-                    style = stroke,
-                )
-                drawCircle(
-                    color = Color.White.copy(alpha = 0.10f),
-                    radius = size.width * 0.38f,
-                    center = Offset(cx, cy),
-                    style = stroke,
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = playlist.title,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }
