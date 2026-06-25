@@ -7,4 +7,5 @@ import javax.inject.Singleton
 @Singleton
 class PlayerStateHolder @Inject constructor() {
     var currentTrack: Track? = null
+    var lastRecordedSongId: String? = null
 }

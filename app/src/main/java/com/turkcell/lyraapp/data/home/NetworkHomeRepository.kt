@@ -1,6 +1,6 @@
 package com.turkcell.lyraapp.data.home
 
-import com.turkcell.lyraapp.data.remote.HomeApiService
+import com.turkcell.lyraapp.data.remote.MeApiService
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import java.util.Calendar
 import javax.inject.Inject
@@ -8,7 +8,7 @@ import kotlin.math.abs
 
 class NetworkHomeRepository @Inject constructor(
     private val songsApiService: SongsApiService,
-    private val homeApiService: HomeApiService,
+    private val meApiService: MeApiService,
 ) : HomeRepository {
 
     override fun getGreeting(): String {
@@ -25,12 +25,12 @@ class NetworkHomeRepository @Inject constructor(
 
     override suspend fun getMoodCategories(): Result<List<MoodCategory>> = Result.success(
         listOf(
-            MoodCategory(id = "gece-surusu",   name = "Gece Sürüşü",   startColor = 0xFF7B61C8, endColor = 0xFF5A47A3),
-            MoodCategory(id = "sabah-kahvesi", name = "Sabah Kahvesi", startColor = 0xFF9C6E8A, endColor = 0xFF7A4F6A),
-            MoodCategory(id = "neon-sokaklar", name = "Neon Sokaklar", startColor = 0xFFD4742A, endColor = 0xFFB85A10),
-            MoodCategory(id = "odaklan",       name = "Odaklan",       startColor = 0xFF3D8E82, endColor = 0xFF2A6D62),
-            MoodCategory(id = "derin-mavi",    name = "Derin Mavi",    startColor = 0xFF3A7A5C, endColor = 0xFF255A42),
-            MoodCategory(id = "yaz-anilari",   name = "Yaz Anıları",   startColor = 0xFF4EA356, endColor = 0xFF358540),
+            MoodCategory(id = "gece-surusu",    name = "Gece Sürüşü",    startColor = 0xFF7B61C8, endColor = 0xFF5A47A3),
+            MoodCategory(id = "sabah-kahvesi",  name = "Sabah Kahvesi",  startColor = 0xFF9C6E8A, endColor = 0xFF7A4F6A),
+            MoodCategory(id = "neon-sokaklar",  name = "Neon Sokaklar",  startColor = 0xFFD4742A, endColor = 0xFFB85A10),
+            MoodCategory(id = "odaklan",        name = "Odaklan",        startColor = 0xFF3D8E82, endColor = 0xFF2A6D62),
+            MoodCategory(id = "derin-mavi",     name = "Derin Mavi",     startColor = 0xFF3A7A5C, endColor = 0xFF255A42),
+            MoodCategory(id = "yaz-anilari",    name = "Yaz Anıları",    startColor = 0xFF4EA356, endColor = 0xFF358540),
         )
     )
 
@@ -47,10 +47,8 @@ class NetworkHomeRepository @Inject constructor(
         }
     }
 
-    override suspend fun getRecentlyPlayed(): Result<List<Track>> = Result.success(emptyList())
-
-    override suspend fun getRecommendations(): Result<List<Track>> = runCatching {
-        homeApiService.getRecommendations().data.map { dto ->
+    override suspend fun getRecentlyPlayed(): Result<List<Track>> = runCatching {
+        meApiService.getRecentlyPlayed(limit = 20).data.map { dto ->
             val (start, end) = COLOR_PALETTE[abs(dto.id.hashCode()) % COLOR_PALETTE.size]
             Track(
                 id              = dto.id,
@@ -61,6 +59,20 @@ class NetworkHomeRepository @Inject constructor(
             )
         }
     }
+    override suspend fun getRecommendations(): Result<List<Track>> = runCatching {
+        meApiService.getRecommendations().data.map { dto ->
+            val (start, end) = COLOR_PALETTE[abs(dto.id.hashCode()) % COLOR_PALETTE.size]
+            Track(
+                id              = dto.id,
+                title           = dto.title,
+                artist          = dto.artist,
+                coverStartColor = start,
+                coverEndColor   = end,
+            )
+        }
+    }
+
+
 
     companion object {
         private val COLOR_PALETTE = listOf(

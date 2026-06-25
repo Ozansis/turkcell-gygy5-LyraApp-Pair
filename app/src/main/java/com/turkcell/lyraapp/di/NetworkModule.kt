@@ -2,7 +2,7 @@ package com.turkcell.lyraapp.di
 
 import com.turkcell.lyraapp.data.auth.SessionManager
 import com.turkcell.lyraapp.data.remote.AuthApiService
-import com.turkcell.lyraapp.data.remote.HomeApiService
+import com.turkcell.lyraapp.data.remote.MeApiService
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import dagger.Module
 import dagger.Provides
@@ -98,6 +98,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHomeApiService(retrofit: Retrofit): HomeApiService =
-        retrofit.create(HomeApiService::class.java)
+    fun provideMeApiService(retrofit: Retrofit): MeApiService =
+        retrofit.create(MeApiService::class.java)
 }
