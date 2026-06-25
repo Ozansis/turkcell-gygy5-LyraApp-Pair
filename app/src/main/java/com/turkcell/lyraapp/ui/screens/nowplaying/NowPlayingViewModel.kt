@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.turkcell.lyraapp.data.nowplaying.NowPlayingTrack
 import com.turkcell.lyraapp.data.player.LyraMusicService
 import com.turkcell.lyraapp.data.player.PlayerStateHolder
+import com.turkcell.lyraapp.data.remote.MeApiService
+import com.turkcell.lyraapp.data.remote.RecordPlayBody
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,6 +32,7 @@ class NowPlayingViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val playerStateHolder: PlayerStateHolder,
     private val songsApiService: SongsApiService,
+    private val meApiService: MeApiService,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NowPlayingContract.State())
@@ -106,6 +109,10 @@ class NowPlayingViewModel @Inject constructor(
                     p.play()
                     _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
                     startPositionPolling()
+                    if (playerStateHolder.lastRecordedSongId != track.id) {
+                        runCatching { meApiService.recordPlay(RecordPlayBody(songId = track.id)) }
+                        playerStateHolder.lastRecordedSongId = track.id
+                    }
                 }
                 .onFailure { throwable ->
                     _state.update { it.copy(isLoading = false, error = throwable.message) }

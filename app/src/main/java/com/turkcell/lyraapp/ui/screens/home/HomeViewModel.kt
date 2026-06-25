@@ -33,6 +33,7 @@ class HomeViewModel @Inject constructor(
             is HomeContract.Intent.MoodCategoryClicked        -> sendEffect(HomeContract.Effect.NavigateToCategory(intent.category.id))
             is HomeContract.Intent.TrackClicked               -> {
                 playerStateHolder.currentTrack = intent.track
+                playerStateHolder.lastRecordedSongId = null
                 sendEffect(HomeContract.Effect.NavigateToPlayer(intent.track.id))
             }
             is HomeContract.Intent.PlaylistClicked            -> sendEffect(HomeContract.Effect.NavigateToPlaylist(intent.playlist.id))

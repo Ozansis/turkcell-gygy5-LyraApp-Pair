@@ -1,5 +1,6 @@
 package com.turkcell.lyraapp.data.home
 
+import com.turkcell.lyraapp.data.remote.MeApiService
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import java.util.Calendar
 import javax.inject.Inject
@@ -7,6 +8,7 @@ import kotlin.math.abs
 
 class NetworkHomeRepository @Inject constructor(
     private val songsApiService: SongsApiService,
+    private val meApiService: MeApiService,
 ) : HomeRepository {
 
     override fun getGreeting(): String {
@@ -45,7 +47,18 @@ class NetworkHomeRepository @Inject constructor(
         }
     }
 
-    override suspend fun getRecentlyPlayed(): Result<List<Track>> = Result.success(emptyList())
+    override suspend fun getRecentlyPlayed(): Result<List<Track>> = runCatching {
+        meApiService.getRecentlyPlayed(limit = 20).data.map { dto ->
+            val (start, end) = COLOR_PALETTE[abs(dto.id.hashCode()) % COLOR_PALETTE.size]
+            Track(
+                id              = dto.id,
+                title           = dto.title,
+                artist          = dto.artist,
+                coverStartColor = start,
+                coverEndColor   = end,
+            )
+        }
+    }
 
     override suspend fun getRecommendedPlaylists(): Result<List<Playlist>> = Result.success(
         listOf(
