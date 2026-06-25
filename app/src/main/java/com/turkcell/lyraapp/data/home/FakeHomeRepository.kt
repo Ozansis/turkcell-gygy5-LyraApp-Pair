@@ -41,10 +41,19 @@ class FakeHomeRepository @Inject constructor() : HomeRepository {
 
     override suspend fun getRecommendations(): Result<List<Track>> = Result.success(
         listOf(
-            Track(id = "rec-1", title = "Gece Sakinliği",   artist = "Ambient",  coverStartColor = 0xFF7B61C8, coverEndColor = 0xFF5A47A3),
-            Track(id = "rec-2", title = "Enerjik Başlangıç", artist = "Ritim",   coverStartColor = 0xFF9C6E8A, coverEndColor = 0xFF7A4F6A),
-            Track(id = "rec-3", title = "Odak Modu",         artist = "Frekans", coverStartColor = 0xFF2D8A8A, coverEndColor = 0xFF1D6A6A),
-            Track(id = "rec-4", title = "Yaz Vibes",         artist = "Güneş",   coverStartColor = 0xFF4EA356, coverEndColor = 0xFF358540),
+            Track(id = "rec-1", title = "Gece Sakinliği",    artist = "Ambient",  coverStartColor = 0xFF7B61C8, coverEndColor = 0xFF5A47A3),
+            Track(id = "rec-2", title = "Enerjik Başlangıç", artist = "Ritim",    coverStartColor = 0xFF9C6E8A, coverEndColor = 0xFF7A4F6A),
+            Track(id = "rec-3", title = "Odak Modu",          artist = "Frekans", coverStartColor = 0xFF2D8A8A, coverEndColor = 0xFF1D6A6A),
+            Track(id = "rec-4", title = "Yaz Vibes",          artist = "Güneş",   coverStartColor = 0xFF4EA356, coverEndColor = 0xFF358540),
+        )
+    )
+
+    override suspend fun getForYou(): Result<List<Track>> = Result.success(
+        listOf(
+            Track(id = "fy-1", title = "Neon Akşam",       artist = "Aurora Drift",  coverStartColor = 0xFF6B5B95, coverEndColor = 0xFF4A3A7A),
+            Track(id = "fy-2", title = "Sabah Işığı",      artist = "Polaris",        coverStartColor = 0xFFE07B54, coverEndColor = 0xFFC25A30),
+            Track(id = "fy-3", title = "Derin Frekans",    artist = "Frekans",        coverStartColor = 0xFF5B8DB8, coverEndColor = 0xFF3A6A95),
+            Track(id = "fy-4", title = "Yıldız Yağmuru",  artist = "Gece Yarısı",   coverStartColor = 0xFF3D8E82, coverEndColor = 0xFF2A6D62),
         )
     )
 }

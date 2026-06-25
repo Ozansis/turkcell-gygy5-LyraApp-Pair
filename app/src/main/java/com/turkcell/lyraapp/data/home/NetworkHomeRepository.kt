@@ -72,7 +72,18 @@ class NetworkHomeRepository @Inject constructor(
         }
     }
 
-
+    override suspend fun getForYou(): Result<List<Track>> = runCatching {
+        meApiService.getForYou().data.map { dto ->
+            val (start, end) = COLOR_PALETTE[abs(dto.id.hashCode()) % COLOR_PALETTE.size]
+            Track(
+                id              = dto.id,
+                title           = dto.title,
+                artist          = dto.artist,
+                coverStartColor = start,
+                coverEndColor   = end,
+            )
+        }
+    }
 
     companion object {
         private val COLOR_PALETTE = listOf(

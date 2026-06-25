@@ -23,7 +23,6 @@ data class RecordPlayResponse(
 
 data class SongListResponse(val data: List<SongDto>)
 
-
 interface MeApiService {
     @GET("api/v1/me/recently-played")
     suspend fun getRecentlyPlayed(
@@ -33,7 +32,9 @@ interface MeApiService {
     @POST("api/v1/me/plays")
     suspend fun recordPlay(@Body body: RecordPlayBody): RecordPlayResponse
 
-
     @GET("api/v1/me/recommendations")
     suspend fun getRecommendations(@Query("limit") limit: Int = 20): SongListResponse
+
+    @GET("api/v1/me/for-you")
+    suspend fun getForYou(@Query("limit") limit: Int = 20): SongListResponse
 }
