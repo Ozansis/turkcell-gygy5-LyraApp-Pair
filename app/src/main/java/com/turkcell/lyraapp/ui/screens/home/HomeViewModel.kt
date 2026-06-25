@@ -63,6 +63,10 @@ class HomeViewModel @Inject constructor(
                 .onSuccess { tracks -> _state.update { it.copy(recentlyPlayed = tracks) } }
                 .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }
 
+            homeRepository.getForYou()
+                .onSuccess { tracks -> _state.update { it.copy(forYouTracks = tracks) } }
+                .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }
+
             homeRepository.getRecommendations()
                 .onSuccess { tracks -> _state.update { it.copy(recommendations = tracks) } }
                 .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }

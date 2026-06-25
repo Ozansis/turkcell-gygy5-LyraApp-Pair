@@ -142,6 +142,16 @@ fun HomeScreen(
                     }
                 }
 
+                if (state.forYouTracks.isNotEmpty()) {
+                    item {
+                        ForYouSection(
+                            tracks = state.forYouTracks,
+                            onIntent = onIntent,
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+                }
+
                 if (state.recommendations.isNotEmpty()) {
                     item {
                         RecommendationsSection(
@@ -429,6 +439,35 @@ private fun TrackCard(
 }
 
 @Composable
+private fun ForYouSection(
+    tracks: List<Track>,
+    onIntent: (HomeContract.Intent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Senin için müzikler",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(items = tracks, key = { it.id }) { track ->
+                TrackCard(
+                    track = track,
+                    onClick = { onIntent(HomeContract.Intent.TrackClicked(track)) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun RecommendationsSection(
     tracks: List<Track>,
     onIntent: (HomeContract.Intent) -> Unit,
@@ -436,7 +475,7 @@ private fun RecommendationsSection(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "Senin için çalma listeleri",
+            text = "Önerilenler",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
