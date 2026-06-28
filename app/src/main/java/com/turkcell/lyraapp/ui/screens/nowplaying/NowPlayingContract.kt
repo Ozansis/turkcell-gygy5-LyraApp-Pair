@@ -8,6 +8,8 @@ object NowPlayingContract {
         val track: NowPlayingTrack? = null,
         val isLoading: Boolean = false,
         val error: String? = null,
+        val isDownloaded: Boolean = false,
+        val isDownloading: Boolean = false,
     )
 
     sealed interface Intent {
@@ -21,6 +23,7 @@ object NowPlayingContract {
         data class SeekTo(val progress: Float) : Intent
         data object BackClicked : Intent
         data object ArkaplanClicked : Intent
+        data object DownloadClicked : Intent
     }
 
     sealed interface Effect {

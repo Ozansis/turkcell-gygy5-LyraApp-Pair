@@ -1,5 +1,6 @@
 package com.turkcell.lyraapp.ui.screens.nowplaying
 
+import android.app.DownloadManager
 import android.content.ComponentName
 import android.content.Context
 import androidx.core.content.ContextCompat
@@ -9,6 +10,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.turkcell.lyraapp.data.download.DownloadRepository
 import com.turkcell.lyraapp.data.nowplaying.NowPlayingTrack
 import com.turkcell.lyraapp.data.player.LyraMusicService
 import com.turkcell.lyraapp.data.player.PlayerStateHolder
@@ -33,6 +35,7 @@ class NowPlayingViewModel @Inject constructor(
     private val playerStateHolder: PlayerStateHolder,
     private val songsApiService: SongsApiService,
     private val meApiService: MeApiService,
+    private val downloadRepository: DownloadRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NowPlayingContract.State())
@@ -41,7 +44,6 @@ class NowPlayingViewModel @Inject constructor(
     private val _effect = Channel<NowPlayingContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    // Player arayzü media3-exoplayer'dan gelir; MediaController IS-A Player
     private var player: Player? = null
 
     init {
@@ -72,6 +74,7 @@ class NowPlayingViewModel @Inject constructor(
             is NowPlayingContract.Intent.SeekTo           -> seekTo(intent.progress)
             NowPlayingContract.Intent.BackClicked         -> sendEffect(NowPlayingContract.Effect.NavigateBack)
             NowPlayingContract.Intent.ArkaplanClicked     -> sendEffect(NowPlayingContract.Effect.NavigateToNotification)
+            NowPlayingContract.Intent.DownloadClicked     -> handleDownload()
         }
     }
 
@@ -101,22 +104,81 @@ class NowPlayingViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            val localUri = downloadRepository.getLocalFileUri(track.id)
+            if (localUri != null) {
+                val mediaItem = MediaItem.fromUri(localUri)
+                p.setMediaItem(mediaItem)
+                p.prepare()
+                p.play()
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isDownloaded = true,
+                        track = it.track?.copy(isPlaying = true),
+                    )
+                }
+                startPositionPolling()
+            } else {
+                runCatching { songsApiService.getStreamUrl(track.id) }
+                    .onSuccess { response ->
+                        val mediaItem = MediaItem.fromUri(response.data.url)
+                        p.setMediaItem(mediaItem)
+                        p.prepare()
+                        p.play()
+                        _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
+                        startPositionPolling()
+                        if (playerStateHolder.lastRecordedSongId != track.id) {
+                            runCatching { meApiService.recordPlay(RecordPlayBody(songId = track.id)) }
+                            playerStateHolder.lastRecordedSongId = track.id
+                        }
+                    }
+                    .onFailure { throwable ->
+                        _state.update { it.copy(isLoading = false, error = throwable.message) }
+                    }
+            }
+        }
+    }
+
+    private fun handleDownload() {
+        val track = _state.value.track ?: return
+        if (_state.value.isDownloaded || _state.value.isDownloading) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isDownloading = true, error = null) }
             runCatching { songsApiService.getStreamUrl(track.id) }
                 .onSuccess { response ->
-                    val mediaItem = MediaItem.fromUri(response.data.url)
-                    p.setMediaItem(mediaItem)
-                    p.prepare()
-                    p.play()
-                    _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
-                    startPositionPolling()
-                    if (playerStateHolder.lastRecordedSongId != track.id) {
-                        runCatching { meApiService.recordPlay(RecordPlayBody(songId = track.id)) }
-                        playerStateHolder.lastRecordedSongId = track.id
+                    val downloadId = downloadRepository.startDownload(
+                        songId    = track.id,
+                        streamUrl = response.data.url,
+                        title     = track.title,
+                    )
+                    if (downloadId < 0) {
+                        _state.update { it.copy(isDownloading = false, isDownloaded = true) }
+                    } else {
+                        pollDownloadStatus(downloadId)
                     }
                 }
                 .onFailure { throwable ->
-                    _state.update { it.copy(isLoading = false, error = throwable.message) }
+                    _state.update { it.copy(isDownloading = false, error = throwable.message) }
                 }
+        }
+    }
+
+    private fun pollDownloadStatus(downloadId: Long) {
+        viewModelScope.launch {
+            while (true) {
+                delay(2000)
+                when (downloadRepository.getDownloadStatus(downloadId)) {
+                    DownloadManager.STATUS_SUCCESSFUL -> {
+                        _state.update { it.copy(isDownloaded = true, isDownloading = false) }
+                        return@launch
+                    }
+                    DownloadManager.STATUS_FAILED -> {
+                        _state.update { it.copy(isDownloading = false, error = "İndirme basarisiz oldu.") }
+                        return@launch
+                    }
+                }
+            }
         }
     }
 
