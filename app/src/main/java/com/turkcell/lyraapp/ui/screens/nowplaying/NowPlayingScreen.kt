@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileDownloadDone
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -94,7 +96,12 @@ fun NowPlayingScreen(
     ) {
         when {
             state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            track != null   -> NowPlayingContent(track = track, onIntent = onIntent)
+            track != null   -> NowPlayingContent(
+                track = track,
+                isDownloaded = state.isDownloaded,
+                isDownloading = state.isDownloading,
+                onIntent = onIntent,
+            )
         }
     }
 }
@@ -102,6 +109,8 @@ fun NowPlayingScreen(
 @Composable
 private fun NowPlayingContent(
     track: NowPlayingTrack,
+    isDownloaded: Boolean,
+    isDownloading: Boolean,
     onIntent: (NowPlayingContract.Intent) -> Unit,
 ) {
     Column(
@@ -161,7 +170,12 @@ private fun NowPlayingContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        BottomActions(onArkaplanClicked = { onIntent(NowPlayingContract.Intent.ArkaplanClicked) })
+        BottomActions(
+            isDownloaded = isDownloaded,
+            isDownloading = isDownloading,
+            onArkaplanClicked = { onIntent(NowPlayingContract.Intent.ArkaplanClicked) },
+            onDownloadClicked = { onIntent(NowPlayingContract.Intent.DownloadClicked) },
+        )
     }
 }
 
@@ -361,7 +375,12 @@ private fun PlayerControls(
 }
 
 @Composable
-private fun BottomActions(onArkaplanClicked: () -> Unit) {
+private fun BottomActions(
+    isDownloaded: Boolean,
+    isDownloading: Boolean,
+    onArkaplanClicked: () -> Unit,
+    onDownloadClicked: () -> Unit,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -396,6 +415,31 @@ private fun BottomActions(onArkaplanClicked: () -> Unit) {
                 contentDescription = "Çalma listesi",
                 tint = Color.White.copy(alpha = 0.7f),
             )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(48.dp),
+        ) {
+            when {
+                isDownloading -> CircularProgressIndicator(
+                    color = Color.White.copy(alpha = 0.7f),
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(24.dp),
+                )
+                isDownloaded -> Icon(
+                    imageVector = Icons.Default.FileDownloadDone,
+                    contentDescription = "Indirildi",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                )
+                else -> IconButton(onClick = onDownloadClicked) {
+                    Icon(
+                        imageVector = Icons.Default.FileDownload,
+                        contentDescription = "Indir",
+                        tint = Color.White.copy(alpha = 0.7f),
+                    )
+                }
+            }
         }
     }
 }
