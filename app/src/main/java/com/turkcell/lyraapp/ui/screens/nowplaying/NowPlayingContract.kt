@@ -10,6 +10,9 @@ object NowPlayingContract {
         val error: String? = null,
         val isDownloaded: Boolean = false,
         val isDownloading: Boolean = false,
+        val isShowingAd: Boolean = false,
+        val adTitle: String? = null,
+        val adAdvertiser: String? = null,
     )
 
     sealed interface Intent {

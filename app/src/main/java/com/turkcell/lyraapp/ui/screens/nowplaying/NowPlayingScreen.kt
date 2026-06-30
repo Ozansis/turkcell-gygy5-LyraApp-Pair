@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -96,12 +97,20 @@ fun NowPlayingScreen(
     ) {
         when {
             state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            track != null   -> NowPlayingContent(
-                track = track,
-                isDownloaded = state.isDownloaded,
-                isDownloading = state.isDownloading,
-                onIntent = onIntent,
-            )
+            track != null   -> {
+                NowPlayingContent(
+                    track = track,
+                    isDownloaded = state.isDownloaded,
+                    isDownloading = state.isDownloading,
+                    onIntent = onIntent,
+                )
+                if (state.isShowingAd) {
+                    AdOverlay(
+                        adTitle = state.adTitle.orEmpty(),
+                        adAdvertiser = state.adAdvertiser.orEmpty(),
+                    )
+                }
+            }
         }
     }
 }
@@ -369,6 +378,53 @@ private fun PlayerControls(
                 contentDescription = "Tekrarla",
                 tint = if (isRepeating) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f),
                 modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdOverlay(
+    adTitle: String,
+    adAdvertiser: String,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.80f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 32.dp),
+        ) {
+            Text(
+                text = "REKLAM",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = androidx.compose.ui.unit.TextUnit(2f, androidx.compose.ui.unit.TextUnitType.Sp),
+            )
+            CircularProgressIndicator(color = Color.White)
+            Text(
+                text = adTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = adAdvertiser,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.70f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Reklam sona erdiğinde müzik devam eder",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White.copy(alpha = 0.50f),
+                textAlign = TextAlign.Center,
             )
         }
     }

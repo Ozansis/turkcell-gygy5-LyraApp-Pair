@@ -12,4 +12,6 @@ data class UserProfile(
     val followingCount: Int,
     val audioQuality: String,
     val offlineDownloadEnabled: Boolean,
+    val daysLeft: Int? = null,
+    val membershipPlanName: String? = null,
 )

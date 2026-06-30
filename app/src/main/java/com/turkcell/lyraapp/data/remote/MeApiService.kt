@@ -23,6 +23,39 @@ data class RecordPlayResponse(
 
 data class SongListResponse(val data: List<SongDto>)
 
+data class PlaybackNextBody(val songId: String)
+
+data class PlaybackStreamDto(
+    val url: String,
+    val expiresAt: String,
+    val mimeType: String,
+)
+
+data class PlaybackAdDto(
+    val id: String,
+    val title: String,
+    val advertiser: String,
+    val durationMs: Int,
+    val mimeType: String,
+)
+
+data class PlaybackNextDataDto(
+    val type: String,
+    val song: SongDto? = null,
+    val stream: PlaybackStreamDto? = null,
+    val ad: PlaybackAdDto? = null,
+    val adStream: PlaybackStreamDto? = null,
+    val impressionId: String? = null,
+)
+
+data class PlaybackNextResponse(val data: PlaybackNextDataDto)
+
+data class AdCompleteBody(val impressionId: String)
+
+data class AdCompleteDataDto(val completed: Boolean)
+
+data class AdCompleteResponse(val data: AdCompleteDataDto)
+
 interface MeApiService {
     @GET("api/v1/me/recently-played")
     suspend fun getRecentlyPlayed(
@@ -37,4 +70,10 @@ interface MeApiService {
 
     @GET("api/v1/me/for-you")
     suspend fun getForYou(@Query("limit") limit: Int = 20): SongListResponse
+
+    @POST("api/v1/me/playback/next")
+    suspend fun requestPlaybackNext(@Body body: PlaybackNextBody): PlaybackNextResponse
+
+    @POST("api/v1/me/playback/ad-complete")
+    suspend fun reportAdComplete(@Body body: AdCompleteBody): AdCompleteResponse
 }

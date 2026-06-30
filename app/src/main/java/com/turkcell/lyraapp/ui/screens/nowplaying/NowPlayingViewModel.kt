@@ -14,11 +14,13 @@ import com.turkcell.lyraapp.data.download.DownloadRepository
 import com.turkcell.lyraapp.data.nowplaying.NowPlayingTrack
 import com.turkcell.lyraapp.data.player.LyraMusicService
 import com.turkcell.lyraapp.data.player.PlayerStateHolder
+import com.turkcell.lyraapp.data.remote.AdCompleteBody
 import com.turkcell.lyraapp.data.remote.MeApiService
-import com.turkcell.lyraapp.data.remote.RecordPlayBody
+import com.turkcell.lyraapp.data.remote.PlaybackNextBody
 import com.turkcell.lyraapp.data.remote.SongsApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +47,18 @@ class NowPlayingViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     private var player: Player? = null
+    private var isPlayingAd = false
+    private var pendingSongUrl: String? = null
+    private var pendingImpressionId: String? = null
+    private var pollingJob: Job? = null
+
+    private val playerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_ENDED && isPlayingAd) {
+                handleAdFinished()
+            }
+        }
+    }
 
     init {
         connectToService()
@@ -57,7 +71,9 @@ class NowPlayingViewModel @Inject constructor(
         )
         val future = MediaController.Builder(context, sessionToken).buildAsync()
         future.addListener({
-            player = future.get()
+            val controller = future.get()
+            controller.addListener(playerListener)
+            player = controller
             loadData()
         }, ContextCompat.getMainExecutor(context))
     }
@@ -119,23 +135,70 @@ class NowPlayingViewModel @Inject constructor(
                 }
                 startPositionPolling()
             } else {
-                runCatching { songsApiService.getStreamUrl(track.id) }
+                runCatching { meApiService.requestPlaybackNext(PlaybackNextBody(songId = track.id)) }
                     .onSuccess { response ->
-                        val mediaItem = MediaItem.fromUri(response.data.url)
-                        p.setMediaItem(mediaItem)
-                        p.prepare()
-                        p.play()
-                        _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
-                        startPositionPolling()
-                        if (playerStateHolder.lastRecordedSongId != track.id) {
-                            runCatching { meApiService.recordPlay(RecordPlayBody(songId = track.id)) }
-                            playerStateHolder.lastRecordedSongId = track.id
+                        val data = response.data
+                        if (data.type == "ad" && data.adStream != null && data.ad != null && data.impressionId != null) {
+                            pendingSongUrl = data.stream?.url
+                            pendingImpressionId = data.impressionId
+                            isPlayingAd = true
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isShowingAd = true,
+                                    adTitle = data.ad.title,
+                                    adAdvertiser = data.ad.advertiser,
+                                    track = it.track?.copy(isPlaying = true),
+                                )
+                            }
+                            val mediaItem = MediaItem.fromUri(data.adStream.url)
+                            p.setMediaItem(mediaItem)
+                            p.prepare()
+                            p.play()
+                        } else {
+                            val streamUrl = data.stream?.url
+                            if (streamUrl == null) {
+                                _state.update { it.copy(isLoading = false, error = "Ses akisi alinamadi.") }
+                                return@onSuccess
+                            }
+                            val mediaItem = MediaItem.fromUri(streamUrl)
+                            p.setMediaItem(mediaItem)
+                            p.prepare()
+                            p.play()
+                            _state.update { it.copy(isLoading = false, track = it.track?.copy(isPlaying = true)) }
+                            startPositionPolling()
                         }
                     }
                     .onFailure { throwable ->
                         _state.update { it.copy(isLoading = false, error = throwable.message) }
                     }
             }
+        }
+    }
+
+    private fun handleAdFinished() {
+        isPlayingAd = false
+        val impressionId = pendingImpressionId ?: return
+        val songUrl = pendingSongUrl ?: return
+        pendingImpressionId = null
+        pendingSongUrl = null
+
+        viewModelScope.launch {
+            runCatching { meApiService.reportAdComplete(AdCompleteBody(impressionId)) }
+            val p = player ?: return@launch
+            val mediaItem = MediaItem.fromUri(songUrl)
+            p.setMediaItem(mediaItem)
+            p.prepare()
+            p.play()
+            _state.update {
+                it.copy(
+                    isShowingAd = false,
+                    adTitle = null,
+                    adAdvertiser = null,
+                    track = it.track?.copy(isPlaying = true),
+                )
+            }
+            startPositionPolling()
         }
     }
 
@@ -183,7 +246,8 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private fun startPositionPolling() {
-        viewModelScope.launch {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch {
             while (true) {
                 delay(500)
                 val p = player ?: break
@@ -206,6 +270,7 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private fun togglePlayPause() {
+        if (isPlayingAd) return
         val p = player ?: return
         val wasPlaying = p.isPlaying
         if (wasPlaying) p.pause() else p.play()
@@ -213,17 +278,20 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     private fun seekForward() {
+        if (isPlayingAd) return
         val p = player ?: return
         val newPos = (p.currentPosition + 10_000L).coerceAtMost(p.duration.coerceAtLeast(0L))
         p.seekTo(newPos)
     }
 
     private fun restart() {
+        if (isPlayingAd) return
         player?.seekTo(0)
         _state.update { it.copy(track = it.track?.copy(progress = 0f, currentPosition = "0:00")) }
     }
 
     private fun seekTo(progress: Float) {
+        if (isPlayingAd) return
         val p = player ?: return
         val duration = p.duration.takeIf { it > 0 } ?: return
         p.seekTo((duration * progress).toLong())
@@ -255,6 +323,8 @@ class NowPlayingViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        player?.removeListener(playerListener)
+        pollingJob?.cancel()
         player = null
         super.onCleared()
     }

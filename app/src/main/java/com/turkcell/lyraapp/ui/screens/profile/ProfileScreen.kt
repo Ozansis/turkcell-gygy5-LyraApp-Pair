@@ -27,11 +27,15 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +55,7 @@ import com.turkcell.lyraapp.data.profile.UserProfile
 
 @Composable
 fun ProfileRoute(
+    onNavigateToMembership: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -70,6 +75,7 @@ fun ProfileRoute(
                 ProfileContract.Effect.NavigateToPrivacy         -> Unit
                 ProfileContract.Effect.NavigateToHelpAndSupport  -> Unit
                 ProfileContract.Effect.NavigateToSettings        -> Unit
+                ProfileContract.Effect.NavigateToMembership      -> onNavigateToMembership()
             }
         }
     }
@@ -103,7 +109,9 @@ fun ProfileScreen(
     ) {
         ProfileTopBar(onIntent = onIntent)
         ProfileAvatarSection(profile = profile)
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        PremiumBannerSection(profile = profile, onIntent = onIntent)
+        Spacer(modifier = Modifier.height(20.dp))
         ProfileThemeToggle(isDarkTheme = state.isDarkTheme, onIntent = onIntent)
         Spacer(modifier = Modifier.height(8.dp))
         ProfileSettingsMenu(profile = profile, onIntent = onIntent)
@@ -226,6 +234,90 @@ private fun StatItem(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun PremiumBannerSection(
+    profile: UserProfile,
+    onIntent: (ProfileContract.Intent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (profile.isPremium && profile.daysLeft != null) {
+        Surface(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clickable { onIntent(ProfileContract.Intent.NavigateToMembershipClicked) },
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            shape = CircleShape,
+                        ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    val planLabel = profile.membershipPlanName ?: "Premium"
+                    Text(
+                        text = "$planLabel · ${profile.daysLeft} gün kaldı",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Text(
+                        text = "Yenile ya da aboneliğe geç",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    } else if (!profile.isPremium) {
+        Button(
+            onClick = { onIntent(ProfileContract.Intent.NavigateToMembershipClicked) },
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+            ),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Star,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Premium'a Geç",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
     }
 }
 

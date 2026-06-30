@@ -2,7 +2,7 @@ package com.turkcell.lyraapp.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.turkcell.lyraapp.data.profile.ProfileRepository
+import com.turkcell.lyraapp.data.user.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileContract.State())
@@ -40,15 +40,16 @@ class ProfileViewModel @Inject constructor(
             ProfileContract.Intent.OfflineDownloadClicked -> sendEffect(ProfileContract.Effect.NavigateToOfflineDownload)
             ProfileContract.Intent.NotificationsClicked  -> sendEffect(ProfileContract.Effect.NavigateToNotifications)
             ProfileContract.Intent.PrivacyClicked        -> sendEffect(ProfileContract.Effect.NavigateToPrivacy)
-            ProfileContract.Intent.HelpAndSupportClicked -> sendEffect(ProfileContract.Effect.NavigateToHelpAndSupport)
-            ProfileContract.Intent.SettingsClicked       -> sendEffect(ProfileContract.Effect.NavigateToSettings)
+            ProfileContract.Intent.HelpAndSupportClicked      -> sendEffect(ProfileContract.Effect.NavigateToHelpAndSupport)
+            ProfileContract.Intent.SettingsClicked             -> sendEffect(ProfileContract.Effect.NavigateToSettings)
+            ProfileContract.Intent.NavigateToMembershipClicked -> sendEffect(ProfileContract.Effect.NavigateToMembership)
         }
     }
 
     private fun loadData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            profileRepository.getProfile()
+            userRepository.getUser()
                 .onSuccess { profile -> _state.update { it.copy(profile = profile) } }
                 .onFailure { throwable -> _state.update { it.copy(error = throwable.message) } }
             _state.update { it.copy(isLoading = false) }
