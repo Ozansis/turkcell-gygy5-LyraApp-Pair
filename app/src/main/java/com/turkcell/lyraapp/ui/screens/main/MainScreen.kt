@@ -6,26 +6,33 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.turkcell.lyraapp.ui.components.LyraBnb
 import com.turkcell.lyraapp.ui.navigation.BottomNavDestination
+import com.turkcell.lyraapp.ui.screens.checkout.CheckoutRoute
 import com.turkcell.lyraapp.ui.screens.createplaylist.CreatePlaylistRoute
 import com.turkcell.lyraapp.ui.screens.favorites.FavoritesRoute
 import com.turkcell.lyraapp.ui.screens.home.HomeRoute
 import com.turkcell.lyraapp.ui.screens.library.LibraryRoute
-import com.turkcell.lyraapp.ui.screens.playlistdetail.PlaylistDetailRoute
-import com.turkcell.lyraapp.ui.screens.profile.ProfileRoute
+import com.turkcell.lyraapp.ui.screens.membership.MembershipPlansRoute
 import com.turkcell.lyraapp.ui.screens.notification.NotificationRoute
 import com.turkcell.lyraapp.ui.screens.nowplaying.NowPlayingRoute
+import com.turkcell.lyraapp.ui.screens.playlistdetail.PlaylistDetailRoute
+import com.turkcell.lyraapp.ui.screens.profile.ProfileRoute
 import com.turkcell.lyraapp.ui.screens.search.SearchRoute
 
-private const val PLAYLIST_DETAIL_ROUTE = "playlist_detail"
-private const val CREATE_PLAYLIST_ROUTE = "create_playlist"
-private const val NOW_PLAYING_ROUTE     = "now_playing"
-private const val NOTIFICATION_ROUTE    = "notification"
+private const val PLAYLIST_DETAIL_ROUTE  = "playlist_detail"
+private const val CREATE_PLAYLIST_ROUTE  = "create_playlist"
+private const val NOW_PLAYING_ROUTE      = "now_playing"
+private const val NOTIFICATION_ROUTE     = "notification"
+private const val MEMBERSHIP_PLANS_ROUTE = "membership_plans"
+private const val CHECKOUT_ROUTE         = "checkout/{planId}"
+private fun checkoutRoute(planId: String) = "checkout/$planId"
 
 @Composable
 fun MainRoute() {
@@ -62,7 +69,11 @@ fun MainRoute() {
                 )
             }
             composable(BottomNavDestination.FAVORITES.route) { FavoritesRoute() }
-            composable(BottomNavDestination.PROFILE.route) { ProfileRoute() }
+            composable(BottomNavDestination.PROFILE.route) {
+                ProfileRoute(
+                    onNavigateToMembership = { navController.navigate(MEMBERSHIP_PLANS_ROUTE) },
+                )
+            }
             composable(PLAYLIST_DETAIL_ROUTE) {
                 PlaylistDetailRoute(
                     onNavigateBack = { navController.navigateUp() },
@@ -81,6 +92,26 @@ fun MainRoute() {
             }
             composable(NOTIFICATION_ROUTE) {
                 NotificationRoute()
+            }
+            composable(MEMBERSHIP_PLANS_ROUTE) {
+                MembershipPlansRoute(
+                    onNavigateBack = { navController.navigateUp() },
+                    onNavigateToCheckout = { planId -> navController.navigate(checkoutRoute(planId)) },
+                )
+            }
+            composable(
+                route = CHECKOUT_ROUTE,
+                arguments = listOf(navArgument("planId") { type = NavType.StringType }),
+            ) {
+                CheckoutRoute(
+                    onNavigateBack = { navController.navigateUp() },
+                    onPaymentSuccess = {
+                        navController.navigate(BottomNavDestination.HOME.route) {
+                            popUpTo(MEMBERSHIP_PLANS_ROUTE) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
         }
     }

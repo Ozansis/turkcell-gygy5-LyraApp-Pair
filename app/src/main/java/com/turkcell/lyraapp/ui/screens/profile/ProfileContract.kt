@@ -21,6 +21,7 @@ object ProfileContract {
         data object PrivacyClicked : Intent
         data object HelpAndSupportClicked : Intent
         data object SettingsClicked : Intent
+        data object NavigateToMembershipClicked : Intent
     }
 
     sealed interface Effect {
@@ -31,5 +32,6 @@ object ProfileContract {
         data object NavigateToPrivacy : Effect
         data object NavigateToHelpAndSupport : Effect
         data object NavigateToSettings : Effect
+        data object NavigateToMembership : Effect
     }
 }
