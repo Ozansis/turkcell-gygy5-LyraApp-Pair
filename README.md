@@ -20,7 +20,6 @@ LyraApp, çevrimiçi ve çevrimdışı müzik dinleme deneyimi sunan bir Android
 - [Proje Yapısı](#proje-yapısı)
 - [Backend / API](#backend--api)
 - [Kurulum](#kurulum)
-- [Katkı Sağlama](#katkı-sağlama)
 
 ## Genel Bakış
 
@@ -193,17 +192,3 @@ Projeyi Android Studio ile açın ve Gradle senkronizasyonunun tamamlanmasını 
 ```
 
 Backend API adresi `di/NetworkModule.kt` içerisinde sabit olarak tanımlıdır; farklı bir ortama bağlanmak için bu dosyanın güncellenmesi gerekir.
-
----
-
-## Katkı Sağlama
-
-Bu depoda çalışan herkes `Agents.md` dosyasında tanımlanan kurallara uymak zorundadır. Özet olarak:
-
-- Tek seferde en fazla beş, birbiriyle ilişkili dosya üzerinde çalışılır.
-- Eksik veya belirsiz bilgi uydurulmaz; operasyon durdurulup kullanıcıya sorulur.
-- Kod üretmeden önce dosya dökümü ve varsa bağımlılık matrisi içeren bir plan sunulur ve onay alınır.
-- Herhangi bir MVI ekranı oluşturulmadan veya değiştirilmeden önce `docs/architecture/` altındaki dökümanlar okunur.
-- Çıktılarda resmi bir dil kullanılır, emoji kullanılmaz.
-
-Ayrıntılar için bkz. `Agents.md`.
