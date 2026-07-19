@@ -1,6 +1,14 @@
 # LyraApp
 
-LyraApp, Turkcell GYGY5 kapsamında geliştirilen, çevrimiçi ve çevrimdışı müzik dinleme deneyimi sunan bir Android uygulamasıdır. Uygulama Jetpack Compose ile geliştirilmekte olup MVI (Model-View-Intent) mimarisini temel alır ve ayrı bir ekip tarafından sağlanan RESTful bir API üzerinden çalışır.
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM%202026.02.01-4285F4)
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84)
+![Mimari](https://img.shields.io/badge/Mimari-MVI-8F4A5F)
+![DI](https://img.shields.io/badge/DI-Hilt-FF6F00)
+
+LyraApp, çevrimiçi ve çevrimdışı müzik dinleme deneyimi sunan bir Android uygulamasıdır. Uygulama Jetpack Compose ile geliştirilmekte olup MVI (Model-View-Intent) mimarisini temel alır ve RESTful bir API üzerinden çalışır.
+
+---
 
 ## İçindekiler
 
@@ -27,23 +35,33 @@ LyraApp, Turkcell GYGY5 kapsamında geliştirilen, çevrimiçi ve çevrimdışı
 | Bağımlılık enjeksiyonu | Hilt |
 | Ağ katmanı | Retrofit + OkHttp |
 | Medya oynatma | Media3 (ExoPlayer) |
-| Backend | Ayrı bir ekip tarafından geliştirilen RESTful API |
+| Backend | RESTful API (JWT kimlik doğrulama, imzalı ses akışı) |
+
+---
 
 ## Ekran Görüntüleri
 
 Aşağıdaki ekran görüntüleri uygulamanın temel akışlarını göstermektedir.
 
-| Ana Sayfa | Arama |
-|---|---|
-| ![Ana Sayfa](docs/screenshots/home.jpg) | ![Arama](docs/screenshots/search.jpg) |
+**Kimlik Doğrulama**
 
-| Şimdi Çalıyor | Kilit Ekranı Bildirimi |
-|---|---|
-| ![Şimdi Çalıyor](docs/screenshots/now-playing.jpg) | ![Kilit Ekranı Bildirimi](docs/screenshots/lock-screen-playback.jpg) |
+| <img src="docs/screenshots/phone-entry.jpg" width="200" alt="Telefon Girişi"> | <img src="docs/screenshots/otp-verify.jpg" width="200" alt="Doğrulama Kodu"> | <img src="docs/screenshots/complete-profile.jpg" width="200" alt="Profili Tamamla"> |
+|:---:|:---:|:---:|
+| Telefon Girişi | Doğrulama Kodu | Profili Tamamla |
 
-| Premium Üyelik Planları | Ödeme |
-|---|---|
-| ![Premium Üyelik Planları](docs/screenshots/membership-plans.jpg) | ![Ödeme](docs/screenshots/checkout.jpg) |
+**Ana Akış ve Oynatma**
+
+| <img src="docs/screenshots/home.jpg" width="200" alt="Ana Sayfa"> | <img src="docs/screenshots/search.jpg" width="200" alt="Arama"> | <img src="docs/screenshots/now-playing.jpg" width="200" alt="Şimdi Çalıyor"> |
+|:---:|:---:|:---:|
+| Ana Sayfa | Arama | Şimdi Çalıyor |
+
+**Premium ve Ödeme**
+
+| <img src="docs/screenshots/lock-screen-playback.jpg" width="200" alt="Kilit Ekranı Bildirimi"> | <img src="docs/screenshots/membership-plans.jpg" width="200" alt="Premium Üyelik Planları"> | <img src="docs/screenshots/checkout.jpg" width="200" alt="Ödeme"> |
+|:---:|:---:|:---:|
+| Kilit Ekranı Bildirimi | Premium Üyelik Planları | Ödeme |
+
+---
 
 ## Özellikler
 
@@ -58,6 +76,8 @@ Aşağıdaki ekran görüntüleri uygulamanın temel akışlarını göstermekte
 - Ücretsiz kullanıcılar için periyodik reklam mantığı; premium kullanıcılar için reklamsız dinleme (backend tarafından yönetilir).
 - Kullanıcı profili görüntüleme ve profil tamamlama akışı.
 - Açık ve koyu tema desteği; sabit marka renk paleti (dinamik renk kapalıdır).
+
+---
 
 ## Mimari
 
@@ -97,6 +117,8 @@ Mimari kararların ayrıntılı gerekçeleri için:
 - `docs/architecture/mvi-viewmodel-rules.md`
 - `docs/decisions.md`
 
+---
+
 ## Teknoloji Yığını
 
 | Kütüphane | Versiyon | Amaç |
@@ -112,6 +134,8 @@ Mimari kararların ayrıntılı gerekçeleri için:
 | AndroidX Security Crypto | 1.0.0 | Token'ların şifreli saklanması |
 | AGP | 9.2.1 | Android Gradle Plugin |
 
+---
+
 ## Proje Yapısı
 
 Uygulama içerisinde yer alan başlıca ekranlar:
@@ -126,9 +150,11 @@ Uygulama içerisinde yer alan başlıca ekranlar:
 
 Veri katmanındaki başlıca modüller: `auth`, `home`, `search`, `library`, `favorites`, `playlistdetail`, `createplaylist`, `nowplaying`, `player`, `download`, `membership`, `profile`, `user`.
 
+---
+
 ## Backend / API
 
-Uygulama, ayrı bir ekip tarafından geliştirilen ve `docs/api/openapi.json` dosyasında tanımlı olan RESTful bir API tüketir.
+Uygulama, `docs/api/openapi.json` dosyasında tanımlı olan RESTful bir API'yi tüketir.
 
 | Etiket | Açıklama |
 |---|---|
@@ -143,3 +169,41 @@ Uygulama, ayrı bir ekip tarafından geliştirilen ve `docs/api/openapi.json` do
 
 Kimlik doğrulama dışındaki tüm isteklere `Authorization: Bearer <accessToken>` başlığı eklenir; 401 yanıtında refresh token ile bir kez otomatik yenileme denemesi yapılır (bkz. `di/NetworkModule.kt`).
 
+---
+
+## Kurulum
+
+### Gereksinimler
+
+- Android Studio (güncel kararlı sürüm)
+- JDK 11
+- Android SDK 36 (minimum SDK 24)
+
+### Adımlar
+
+```
+git clone https://github.com/Ozansis/turkcell-gygy5-LyraApp-Pair.git
+cd turkcell-gygy5-LyraApp-Pair
+```
+
+Projeyi Android Studio ile açın ve Gradle senkronizasyonunun tamamlanmasını bekleyin. Ardından uygulamayı bir emülatör veya fiziksel cihazda çalıştırın:
+
+```
+./gradlew assembleDebug
+```
+
+Backend API adresi `di/NetworkModule.kt` içerisinde sabit olarak tanımlıdır; farklı bir ortama bağlanmak için bu dosyanın güncellenmesi gerekir.
+
+---
+
+## Katkı Sağlama
+
+Bu depoda çalışan herkes `Agents.md` dosyasında tanımlanan kurallara uymak zorundadır. Özet olarak:
+
+- Tek seferde en fazla beş, birbiriyle ilişkili dosya üzerinde çalışılır.
+- Eksik veya belirsiz bilgi uydurulmaz; operasyon durdurulup kullanıcıya sorulur.
+- Kod üretmeden önce dosya dökümü ve varsa bağımlılık matrisi içeren bir plan sunulur ve onay alınır.
+- Herhangi bir MVI ekranı oluşturulmadan veya değiştirilmeden önce `docs/architecture/` altındaki dökümanlar okunur.
+- Çıktılarda resmi bir dil kullanılır, emoji kullanılmaz.
+
+Ayrıntılar için bkz. `Agents.md`.
