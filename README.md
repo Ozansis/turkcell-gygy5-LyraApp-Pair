@@ -31,19 +31,19 @@ LyraApp, Turkcell GYGY5 kapsamında geliştirilen, çevrimiçi ve çevrimdışı
 
 ## Ekran Görüntüleri
 
-Aşağıdaki ekran görüntüleri uygulamanın temel akışlarını göstermektedir. Görsel dosyaları `docs/screenshots/` klasörü altında aşağıdaki adlarla yer almalıdır.
+Aşağıdaki ekran görüntüleri uygulamanın temel akışlarını göstermektedir.
 
 | Ana Sayfa | Arama |
 |---|---|
-| ![Ana Sayfa](docs/screenshots/home.png) | ![Arama](docs/screenshots/search.png) |
+| ![Ana Sayfa](docs/screenshots/home.jpg) | ![Arama](docs/screenshots/search.jpg) |
 
 | Şimdi Çalıyor | Kilit Ekranı Bildirimi |
 |---|---|
-| ![Şimdi Çalıyor](docs/screenshots/now-playing.png) | ![Kilit Ekranı Bildirimi](docs/screenshots/lock-screen-playback.png) |
+| ![Şimdi Çalıyor](docs/screenshots/now-playing.jpg) | ![Kilit Ekranı Bildirimi](docs/screenshots/lock-screen-playback.jpg) |
 
 | Premium Üyelik Planları | Ödeme |
 |---|---|
-| ![Premium Üyelik Planları](docs/screenshots/membership-plans.png) | ![Ödeme](docs/screenshots/checkout.png) |
+| ![Premium Üyelik Planları](docs/screenshots/membership-plans.jpg) | ![Ödeme](docs/screenshots/checkout.jpg) |
 
 ## Özellikler
 
